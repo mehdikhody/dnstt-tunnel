@@ -1,0 +1,43 @@
+DNStt Tunnel
+=============
+
+This project was inspired by MasterDNS.
+
+https://github.com/masterking32/MasterDnsVPN
+
+The original implementation is written in Python. I am not a big fan of Python
+for networking tools like this, so I decided to port the idea to Go while also
+making some structural changes to the design.
+
+One of the main changes is the removal of the session system used in the
+original project. In environments where there is a single bridge server
+(commonly the case in Iran), maintaining global sessions can introduce
+unnecessary complexity and bottlenecks.
+
+Instead, this implementation focuses on a simpler server-side model.
+
+For every incoming SOCKS5 connection:
+
+1. The client requests a new stream ID from the server
+2. The TCP stream is split into smaller chunks
+3. Each chunk is transmitted through the tunnel
+4. Packets are tagged with the stream ID and packet ID
+
+The transport layer uses a DNS-style tunnel based on DNStt techniques.
+
+Status
+------
+
+This project is still under development.
+
+The implementation is experimental and many things may change as the design
+evolves.
+
+Feedback
+--------
+
+If you have suggestions or improvements, feel free to share them.
+
+Constructive feedback is always welcome.
+
+Thanks for taking the time to read this.
