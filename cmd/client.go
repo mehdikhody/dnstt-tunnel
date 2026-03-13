@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"dnstt-tunnel/internal/client"
+	"dnstt-tunnel/client"
 
 	"github.com/spf13/cobra"
 )
@@ -19,73 +19,102 @@ var clientCmd = &cobra.Command{
 
 func init() {
 	clientCmd.Flags().StringVarP(
-		&clientFlags.HOST,
-		"HOST",
-		"H",
-		"127.0.0.1",
-		"socks5 server address",
+		&clientFlags.Host,
+		"host",
+		"",
+		"0.0.0.0",
+		"Socks5 server host",
 	)
 
 	clientCmd.Flags().IntVarP(
-		&clientFlags.PORT,
-		"PORT",
-		"P",
+		&clientFlags.Port,
+		"port",
+		"",
 		1080,
-		"socks5 server port",
+		"Socks5 server port",
+	)
+
+	clientCmd.Flags().StringVarP(
+		&clientFlags.Domain,
+		"domain",
+		"d",
+		"",
+		"Domain to use for DNS query",
+	)
+
+	clientCmd.Flags().StringVarP(
+		&clientFlags.Password,
+		"password",
+		"p",
+		"",
+		"Tunnel password",
 	)
 
 	clientCmd.Flags().StringSliceVarP(
-		&clientFlags.DOMAINS,
-		"DOMAIN",
-		"D",
-		nil,
-		"NS domain pointed to the server",
-	)
-
-	err := clientCmd.MarkFlagRequired("DOMAIN")
-	if err != nil {
-		panic(err)
-	}
-
-	clientCmd.Flags().Int64VarP(
-		&clientFlags.MIN_UPLOAD_MTU,
-		"MIN_UPLOAD_MTU",
-		"",
-		0,
-		"Minimum upload chunk size per packet",
-	)
-
-	clientCmd.Flags().Int64VarP(
-		&clientFlags.MAX_UPLOAD_MTU,
-		"MAX_UPLOAD_MTU",
-		"",
-		1500,
-		"Maximum upload chunk size per packet",
-	)
-
-	clientCmd.Flags().Int64VarP(
-		&clientFlags.MIN_DOWNLOAD_MTU,
-		"MIN_DOWNLOAD_MTU",
-		"",
-		0,
-		"Minimum download chunk size per packet",
-	)
-
-	clientCmd.Flags().Int64VarP(
-		&clientFlags.MAX_DOWNLOAD_MTU,
-		"MAX_DOWNLOAD_MTU",
-		"",
-		1500,
-		"Maximum download chunk size per packet",
+		&clientFlags.Resolvers,
+		"resolver",
+		"r",
+		[]string{"8.8.8.8", "8.8.4.4", "1.1.1.1", "1.0.0.1"},
+		"Tunnel password",
 	)
 
 	clientCmd.Flags().IntVarP(
-		&clientFlags.DNS_RESOLVER_TIMEOUT,
-		"DNS_RESOLVER_TIMEOUT",
+		&clientFlags.ChunkSize,
+		"chunk-size",
 		"",
-		3000,
-		"DNS resolve timeout in milliseconds",
+		180,
+		"DNS payload fragment size",
 	)
 
+	clientCmd.Flags().IntVarP(
+		&clientFlags.MaxRetransmits,
+		"retries",
+		"",
+		5,
+		"Max retransmits",
+	)
+
+	clientCmd.Flags().IntVarP(
+		&clientFlags.FlowControlWindow,
+		"window",
+		"",
+		4,
+		"Flow control window size",
+	)
+
+	clientCmd.Flags().IntVarP(
+		&clientFlags.KeepaliveInterval,
+		"keepalive",
+		"",
+		5000,
+		"Keepalive interval (ms)",
+	)
+
+	clientCmd.Flags().IntVarP(
+		&clientFlags.ReadPollInterval,
+		"poll",
+		"",
+		400,
+		"Poll interval for server data (ms)",
+	)
+
+	clientCmd.Flags().IntVarP(
+		&clientFlags.AckTimeout,
+		"ack-timeout",
+		"",
+		2000,
+		"Wait time for ACK before retry (ms)",
+	)
+
+	clientCmd.Flags().IntVarP(
+		&clientFlags.WriteTimeout,
+		"write-timeout",
+		"",
+		2000,
+		"Write timeout (ms)",
+	)
+
+	clientCmd.MarkFlagRequired("domain")
+	clientCmd.MarkFlagRequired("password")
 	rootCmd.AddCommand(clientCmd)
 }

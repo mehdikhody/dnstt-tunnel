@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"dnstt-tunnel/internal/server"
+	"dnstt-tunnel/server"
+	"dnstt-tunnel/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -12,6 +13,11 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Start DNS tunnel server",
 	Run: func(cmd *cobra.Command, args []string) {
+		if serverFlags.Password == "" {
+			password, _ := utils.GeneratePassword(32)
+			serverFlags.Password = password
+		}
+
 		s := server.New(serverFlags)
 		s.Start()
 	},
@@ -19,33 +25,77 @@ var serverCmd = &cobra.Command{
 
 func init() {
 	serverCmd.Flags().StringVarP(
-		&serverFlags.HOST,
-		"HOST",
-		"H",
+		&serverFlags.Host,
+		"host",
+		"",
 		"0.0.0.0",
-		"server listen address",
+		"UDP server host",
 	)
 
 	serverCmd.Flags().IntVarP(
-		&serverFlags.PORT,
-		"PORT",
-		"P",
+		&serverFlags.Port,
+		"port",
+		"",
 		53,
-		"server UDP port",
+		"UDP server port",
 	)
 
-	serverCmd.Flags().StringSliceVarP(
-		&serverFlags.DOMAINS,
-		"DOMAIN",
-		"D",
-		nil,
-		"NS domain pointed to this server",
+	serverCmd.Flags().StringVarP(
+		&serverFlags.Domain,
+		"domain",
+		"d",
+		"",
+		"Domain to use for DNS query",
 	)
 
-	err := serverCmd.MarkFlagRequired("DOMAIN")
-	if err != nil {
-		panic(err)
-	}
+	serverCmd.Flags().StringVarP(
+		&serverFlags.Password,
+		"password",
+		"p",
+		"",
+		"Tunnel password",
+	)
 
+	serverCmd.Flags().IntVarP(
+		&serverFlags.MaxRetransmits,
+		"retries",
+		"",
+		5,
+		"Max retransmits",
+	)
+
+	serverCmd.Flags().IntVarP(
+		&serverFlags.FlowControlWindow,
+		"window",
+		"",
+		4,
+		"Flow control window size",
+	)
+
+	serverCmd.Flags().IntVarP(
+		&serverFlags.KeepaliveInterval,
+		"keepalive",
+		"",
+		5000,
+		"Keepalive interval (ms)",
+	)
+
+	serverCmd.Flags().IntVarP(
+		&serverFlags.AckTimeout,
+		"ack-timeout",
+		"",
+		2000,
+		"Wait time for ACK before retry (ms)",
+	)
+
+	serverCmd.Flags().IntVarP(
+		&serverFlags.WriteTimeout,
+		"write-timeout",
+		"",
+		2000,
+		"Write timeout (ms)",
+	)
+
+	serverCmd.MarkFlagRequired("domain")
 	rootCmd.AddCommand(serverCmd)
 }
