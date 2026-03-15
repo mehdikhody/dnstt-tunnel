@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -53,7 +54,7 @@ func (s *Server) Start() {
 	cesiumlib.Configure(cesiumlib.Config{
 		MaxRetransmits:    s.options.MaxRetransmits,
 		FlowControlWindow: s.options.FlowControlWindow,
-		KeepaliveInterval: time.Duration(s.options.KeepaliveInterval) * time.Millisecond,
+		KeepaliveInterval: 0,
 		AckTimeout:        time.Duration(s.options.AckTimeout) * time.Millisecond,
 		WriteTimeout:      time.Duration(s.options.WriteTimeout) * time.Millisecond,
 	})
@@ -62,22 +63,48 @@ func (s *Server) Start() {
 		udpConn,
 		s.options.Domain,
 		s.options.Password,
-		func(conn net.Conn) {
-			defer conn.Close()
-			buffer := make([]byte, 4096)
-			for {
-				n, err := conn.Read(buffer)
-				if err != nil {
-					return
-				}
-
-				log.Printf("Received: %s", buffer[:n])
-				conn.Write([]byte("pong"))
-			}
-		},
+		s.handle,
 	)
 
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (s *Server) handle(conn net.Conn) {
+	defer conn.Close()
+
+	lenBuffer := make([]byte, 1)
+	_, err := io.ReadFull(conn, lenBuffer)
+	if err != nil {
+		log.Printf("Error reading length: %v", err)
+		return
+	}
+
+	destLen := int(lenBuffer[0])
+	if destLen <= 0 || destLen > 255 {
+		log.Printf("Invalid destination length: %d", destLen)
+		return
+	}
+
+	destBuffer := make([]byte, destLen)
+	_, err = io.ReadFull(conn, destBuffer)
+	if err != nil {
+		log.Printf("Error reading destination: %v", err)
+		return
+	}
+
+	dest := string(destBuffer)
+	log.Printf("Received destination: %s\n", dest)
+
+	remote, err := net.Dial("tcp", dest)
+	if err != nil {
+		log.Printf("Error connecting to server: %v", err)
+		return
+	}
+
+	defer remote.Close()
+
+	go io.Copy(conn, remote)
+	io.Copy(remote, conn)
 }
