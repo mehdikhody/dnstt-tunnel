@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import "github.com/spf13/cobra"
 
@@ -8,7 +8,7 @@ var rootCmd = &cobra.Command{
 	Long:  "dnstt-tunnel is a DNS based VPN/tunnel",
 }
 
-func Execute() {
+func main() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.Execute()
 }

@@ -1,8 +1,8 @@
-package cmd
+package main
 
 import (
-	"dnstt-tunnel/server"
-	"dnstt-tunnel/utils"
+	"dnstt-tunnel/internal/server"
+	"dnstt-tunnel/internal/utils"
 
 	"github.com/spf13/cobra"
 )

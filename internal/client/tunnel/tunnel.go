@@ -28,7 +28,7 @@ type Tunnel struct {
 	UpdatedAt time.Time
 }
 
-func NewTunnel(options *TunnelOptions) *Tunnel {
+func NewTunnel(options TunnelOptions) (*Tunnel, error) {
 	t := &Tunnel{
 		IP:        options.IP,
 		Port:      options.Port,
@@ -42,7 +42,11 @@ func NewTunnel(options *TunnelOptions) *Tunnel {
 	}
 
 	addr := net.JoinHostPort(t.IP, strconv.Itoa(t.Port))
-	conn, err := cesiumlib.NewDnsTunnelConn(addr, c.options.Domain, c.options.Password
+	conn, err := cesiumlib.NewDnsTunnelConn(addr, t.Domain, t.Password)
+	if err != nil {
+		return nil, err
+	}
 
-	return tunnel
+	t.Conn = conn
+	return t, nil
 }

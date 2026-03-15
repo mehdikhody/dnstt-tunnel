@@ -1,7 +1,7 @@
-package cmd
+package main
 
 import (
-	"dnstt-tunnel/client"
+	"dnstt-tunnel/internal/client"
 	"fmt"
 
 	"github.com/spf13/cobra"
